@@ -1,0 +1,80 @@
+from http.client import HTTPException
+from uuid import UUID
+from fastapi import FastAPI, Depends
+from pydantic import BaseModel, Field
+import models
+from database import engine, SessionLocal
+from sqlalchemy.orm import Session
+
+app = FastAPI()
+
+models.Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+   try:
+       db = SessionLocal()
+       yield db
+   finaly:
+       db.close()
+
+
+class Book(BaseModel):
+    title: str = Field(min_leght=1)
+    author: str = Field(min_leght=1, max_leght=100)
+    description: str = Field(min_leght=1, max_lenght= 100)
+    rating: int = Field(gt=-1, lt= 101)
+
+
+
+
+BOOKS = []
+
+
+@app.get('/')
+def read_api(db: Session = Depends(get_db)):
+    return db.query(models.Books).all()
+    book_model = model.Books()
+    book_model.title = book.author
+    book_model.description = book.description
+    book_model.rating = book.rating
+    
+    db.add(book_model)
+    db.commit()
+
+    return book
+
+@pp.put('/{book_id}')
+def update_book(book_id: int, book: book, db: Session = Depends(get_db)):
+
+    book_model = db.query(models.Books).filters(
+        models.books.id == book_id).frist()
+
+    if book_model is None:
+        reise HTTPException(
+           status_code=404, 
+           detail=f"ID {book_id} does not exist"
+        )
+
+    book_model.title = book.title
+    book_model.author = book.author
+    book_model.description = book.description
+    book_model.rating = book.riting
+
+    db.add(book_model)
+    db.commit()
+
+    return book
+
+@app.delite('/{book_id})
+def delite_book(book_id: int, db: Session = depends(get_db)):
+
+    if book_model = is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"ID {book_id}: Dose not exist"
+        )
+
+    db.query(models.Books).filter(models.Books.id == book_id).delete()
+
+    db.commit()
